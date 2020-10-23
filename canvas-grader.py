@@ -1,10 +1,13 @@
 from tkinter import *
 from tkinter.filedialog import askopenfilename
+import tkinter.font as tkFont
 from pathlib import Path
 from zipfile import ZipFile
+from PIL import Image, ImageTk
 import shutil
 import os
 import csv
+import sys
 
 # Step 1: Browse input zip
 # Step 2: Click run to unzip student and class zip file
@@ -19,18 +22,30 @@ class Window:
         self.nofilesuffix=""
         self.section = None
         self.sectionFolder = ""
-        csvfile=Label(root, text="File").grid(row=1, column=0)
-        bar=Entry(master).grid(row=1, column=1) 
+        
+        # import image to window
+        load = Image.open("Canvas-Grader.gif")
+        render = ImageTk.PhotoImage(load)
+        img = Label(root, image=render)
+        img.image = render
+        img.place(x=0, y=0)
 
-        #Buttons  
-        self.cbutton= Button(root, text="Copy", command=self.copyTestFile)
-        self.cbutton.grid(row=30, column=3, sticky = W + E)
-        self.cbutton= Button(root, text="Run", command=self.unzip)
-        self.cbutton.grid(row=20, column=3, sticky = W + E)
-        self.cbutton= Button(root, text="OK", command=self.process_csv)
-        self.cbutton.grid(row=10, column=3, sticky = W + E)
-        self.bbutton= Button(root, text="Browse", command=self.browsecsv)
-        self.bbutton.grid(row=1, column=3)
+        fontStyle = tkFont.Font(family="Arial", size=10)
+
+        # first prompt
+        lbl1 = Label(root, text="1. Select Class Zip: ", font=fontStyle, fg = 'grey')
+        lbl1.place(x=90, y=145, anchor=CENTER)
+        lbl1.config(bg="white")
+        self.bbutton= Button(root, text="Browse", command=self.browsecsv, width="6", bg="#E63D2F", fg='white', font=fontStyle)
+        self.bbutton.place(x=180, y=145, anchor=CENTER)
+
+        # second prompt
+        lbl2 = Label(root, text="2. Select Test File: ", font=fontStyle, fg = 'grey')
+        lbl2.place(x=88.7, y=175, anchor=CENTER)
+        lbl2.config(bg="white")
+        self.cbutton= Button(root, text="Copy", command=self.copyTestFile, width="6", bg="#E63D2F", fg='white', font=fontStyle)
+        self.cbutton.place(x=180, y=175, anchor=CENTER)
+        
 
     def browsecsv(self):
 
@@ -47,6 +62,7 @@ class Window:
         self.filename = path[len(path)-1] # (zipname).zip
         self.nofilesuffix = self.filename[0:self.filename.find(".")] # zipname
         print(self.fullpath, self.filename, self.directory)
+        self.unzip()
 
     def unzip(self):
         with ZipFile(self.fullpath, 'r') as zip_ref:
@@ -76,7 +92,7 @@ class Window:
 
         self.filename = path[len(path)-1] # testfile.py
         for student in self.section:
-            print(self.directory, student)
+            print(student[:student.find("_")])
             student_folder = student[0:student.find("_")] # \studentname
             shutil.copy(self.fullpath, self.sectionFolder + student_folder + "\\" + self.filename) # C:\Users\tyler\Downloads\students\studentname\recursion_tester.py
 
@@ -88,14 +104,14 @@ class Window:
                 os.remove(cur)
                 arr.append(student_folder)
         
-        print("Students that failed a test: ", arr)
+        print("Students that need to be checked: ", arr)
 
-    def process_csv(self):
-        pass
+        sys.exit(0)
         
 
 root = Tk()
-root.title("Auto-Grader")
-root.geometry('800x600')
+root.title("Canvas-Grader")
+root.geometry('250x200')
+root.configure(bg='white')
 window=Window(root)
 root.mainloop() 
