@@ -32,23 +32,29 @@ class Window:
 
         fontStyle = tkFont.Font(family="Arial", size=10)
 
-        # first prompt
+        # first prompt for the class' zip file
         lbl1 = Label(root, text="1. Select Class Zip: ", font=fontStyle, fg = 'grey')
         lbl1.place(x=90, y=145, anchor=CENTER)
         lbl1.config(bg="white")
         self.bbutton= Button(root, text="Browse", command=self.browsecsv, width="6", bg="#E63D2F", fg='white', font=fontStyle)
         self.bbutton.place(x=180, y=145, anchor=CENTER)
 
-        # second prompt
+        # second prompt for the programs test file
         lbl2 = Label(root, text="2. Select Test File: ", font=fontStyle, fg = 'grey')
         lbl2.place(x=88.7, y=175, anchor=CENTER)
         lbl2.config(bg="white")
         self.cbutton= Button(root, text="Copy", command=self.copyTestFile, width="6", bg="#E63D2F", fg='white', font=fontStyle)
         self.cbutton.place(x=180, y=175, anchor=CENTER)
         
-
     def browsecsv(self):
-
+        """ Moves canvas file to create location
+        Args:
+            self.directory(str): directory that the canvas zip reside in
+            self.fullpath(str): full path to the student files to be created
+            self.filename(str): file name to be created
+        Returns:
+            None
+        """
         Tk().withdraw() 
         self.fullpath = askopenfilename() # C:\Users\tyler\Downloads\(zipname).zip
         path = Path(self.fullpath).parts
@@ -61,10 +67,17 @@ class Window:
 
         self.filename = path[len(path)-1] # (zipname).zip
         self.nofilesuffix = self.filename[0:self.filename.find(".")] # zipname
-        print(self.fullpath, self.filename, self.directory)
         self.unzip()
 
     def unzip(self):
+        """ Unzips the Canvas file and creates student profile files for every student submission
+        Args:
+            self.directory(str): directory that the canvas zip reside in
+            self.sectionFolder(str): keeps the directory location of the student folders
+            self.section(str): splits the students up by section
+        Returns:
+            None
+        """
         with ZipFile(self.fullpath, 'r') as zip_ref:
             zip_ref.extractall(self.directory+self.nofilesuffix)
         self.directory += (self.nofilesuffix + "\\") # C:\Users\tyler\Downloads\(zipname)\
@@ -79,6 +92,14 @@ class Window:
         self.sectionFolder = self.directory
     
     def copyTestFile(self):
+        """ Copies the test file rubric into all student folders to be tested for correctness
+        Args:
+            self.directory(str): directory that the canvas zip reside in
+            self.fullpath(str): full path to the student files to be created
+            self.filename(str): file name to be created
+        Returns:
+            None
+        """
         arr = []
         Tk().withdraw() 
         self.fullpath = askopenfilename() # C:\Users\tyler\Downloads\testfile.py
@@ -92,7 +113,6 @@ class Window:
 
         self.filename = path[len(path)-1] # testfile.py
         for student in self.section:
-            print(student[:student.find("_")])
             student_folder = student[0:student.find("_")] # \studentname
             shutil.copy(self.fullpath, self.sectionFolder + student_folder + "\\" + self.filename) # C:\Users\tyler\Downloads\students\studentname\recursion_tester.py
 
@@ -107,11 +127,12 @@ class Window:
         print("Students that need to be checked: ", arr)
 
         sys.exit(0)
-        
 
-root = Tk()
-root.title("Canvas-Grader")
-root.geometry('250x200')
-root.configure(bg='white')
-window=Window(root)
-root.mainloop() 
+# Main function
+if __name__ == "__main__":
+    root = Tk()
+    root.title("Canvas-Grader")
+    root.geometry('250x200')
+    root.configure(bg='white')
+    window=Window(root)
+    root.mainloop() 
